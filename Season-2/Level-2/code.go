@@ -44,41 +44,41 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		"user4@example.com": "Log4Fun",
 	}
 
-	if r.Method == "POST" {
-
-		decode := json.NewDecoder(r.Body)
-		decode.DisallowUnknownFields()
-
-		err := decode.Decode(&reqBody)
-		if err != nil {
-			http.Error(w, "Cannot decode body", http.StatusBadRequest)
-			return
-		}
-		email := reqBody.Email
-		password := reqBody.Password
-
-		if !isValidEmail(email) {
-			log.Printf("Invalid email format: %q", email)
-			http.Error(w, "Invalid email format", http.StatusBadRequest)
-			return
-		}
-
-		storedPassword, ok := testFakeMockUsers[email]
-		if !ok {
-			http.Error(w, "invalid email or password", http.StatusUnauthorized)
-			return
-		}
-
-		if password == storedPassword {
-			log.Printf("User %q logged in successfully with a valid password %q", email, password)
-			w.WriteHeader(http.StatusOK)
-		} else {
-			http.Error(w, "Invalid Email or Password", http.StatusUnauthorized)
-		}
-
-	} else {
+	if r.Method != "POST" {
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+		return
 	}
+
+	decode := json.NewDecoder(r.Body)
+	decode.DisallowUnknownFields()
+
+	err := decode.Decode(&reqBody)
+	if err != nil {
+		http.Error(w, "Cannot decode body", http.StatusBadRequest)
+		return
+	}
+	email := reqBody.Email
+	password := reqBody.Password
+
+	if !isValidEmail(email) {
+		log.Printf("Invalid email format")
+		http.Error(w, "Invalid email format", http.StatusBadRequest)
+		return
+	}
+
+	storedPassword, ok := testFakeMockUsers[email]
+	if !ok {
+		http.Error(w, "Invalid Email or Password", http.StatusUnauthorized)
+		return
+	}
+
+	if password != storedPassword {
+		http.Error(w, "Invalid Email or Password", http.StatusUnauthorized)
+		return
+	}
+
+	log.Printf("User logged in successfully with a valid password")
+	w.WriteHeader(http.StatusOK)
 }
 
 func main() {
