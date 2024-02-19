@@ -24,19 +24,6 @@ app.use(bodyParser.text({ type: "application/xml" }));
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
-app.post("/ufo/upload", upload.single("file"), (req, res) => {
-  if (!req.file) {
-    return res.status(400).send("No file uploaded.");
-  }
-
-  console.log("Received uploaded file:", req.file.originalname);
-
-  const uploadedFilePath = path.join(__dirname, req.file.originalname);
-  fs.writeFileSync(uploadedFilePath, req.file.buffer);
-
-  res.status(200).send("File uploaded successfully.");
-});
-
 app.post("/ufo", (req, res) => {
   const contentType = req.headers["content-type"];
 
@@ -46,9 +33,9 @@ app.post("/ufo", (req, res) => {
   } else if (contentType === "application/xml") {
     try {
       const xmlDoc = libxmljs.parseXml(req.body, {
-        replaceEntities: true,
-        recover: true,
-        nonet: false,
+        replaceEntities: false,
+        recover: false,
+        nonet: true,
       });
 
       console.log("Received XML data from XMLon:", xmlDoc.toString());
